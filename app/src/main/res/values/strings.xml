@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Di/Stress</string>
+    <string name="title_settings">Settings</string>
+    <string name="title_send">Send</string>
+    <string name="title_listen">Listen</string>
+
+</resources>
