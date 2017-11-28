@@ -341,10 +341,16 @@ public class MainActivity extends AppCompatActivity  implements BeacodeScanner.L
     @Override
     public void onMessage(int messageId, BeacodeScanner.Message
             message) {
-        this.message=message.toString();
 
+        if(findViewById(R.id.listen_list).getVisibility()==View.GONE) {
+            findViewById(R.id.textView).setVisibility(View.GONE);
+            findViewById(R.id.listen_list).setVisibility(View.VISIBLE);
+        }
+
+        this.message=message.toString();
         list.add("     "+this.message);
         arrayAdapter.notifyDataSetChanged();
+
 
         if(!appOpen) {
             notifications.setContentText(this.message);
@@ -352,6 +358,7 @@ public class MainActivity extends AppCompatActivity  implements BeacodeScanner.L
             // notificationID allows you to update the notification later on.
             mNotificationManager.notify(0, notifications.build());
         }
+        
     }
 
 

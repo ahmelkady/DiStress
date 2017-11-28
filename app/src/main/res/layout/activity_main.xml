@@ -17,13 +17,24 @@
 
         <android.support.constraint.ConstraintLayout
             android:id="@+id/home"
-            android:visibility="gone"
+            android:visibility="visible"
 
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <TextView
+                android:id="@+id/textView"
+                style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                android:visibility="visible"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="26dp"
+                android:text="Di/Stress calls will appear here" />
+
             <ListView
                 android:id="@+id/listen_list"
+                android:visibility="gone"
+                android:transcriptMode="alwaysScroll"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 />
