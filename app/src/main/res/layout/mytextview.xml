@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tv"
+    style="@style/Widget.AppCompat.Button.Borderless.Colored"
+    android:layout_width="fill_parent"
+android:scrollIndicators="right"
+    android:drawableLeft="@drawable/icons8_michael"
+    android:textColor="@color/colorPrimaryDark"
+    android:gravity="center_vertical"
+    android:textSize="15dp"
+
+    android:layout_height="fill_parent"/>

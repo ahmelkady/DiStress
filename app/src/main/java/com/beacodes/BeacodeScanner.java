@@ -125,7 +125,9 @@ public final class BeacodeScanner {
     private BeacodeScanner() { }
 
     static {
+
         System.loadLibrary("beacode");
+
     }
 
     public static void setListener(Listener listener) {
