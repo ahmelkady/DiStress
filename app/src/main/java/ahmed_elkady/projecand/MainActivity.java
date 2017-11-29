@@ -2,12 +2,17 @@ package ahmed_elkady.projecand;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -22,10 +27,12 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
-
 import com.beacodes.BeacodeScanner;
+import android.support.v7.app.ActionBar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,16 +50,31 @@ public class MainActivity extends AppCompatActivity  implements BeacodeScanner.L
          MediaPlayer helpMp;
          MediaPlayer policeMp;
          MediaPlayer followingMp;
+         ImageView hImage; //help image
+         ImageView hImageG; //help image grey
+         ImageView pImage;  //police image
+         ImageView pImageG;//police image grey
+         ImageView fImage; //following image
+         ImageView fImageG;//following image grey
+         TextView distress;
+         TextView policeCounter;
+         TextView helpCounter;
+         TextView followingCounter;
+         int pCounter; //police counter
+         int hCounter; //help counter
+         int fCounter; //following counter
+         boolean flash=true;
          //checkbox and shared preferences to remember last state
+
          CheckBox check ;
-        SharedPreferences pref;
-        SharedPreferences.Editor editor;
+         SharedPreferences pref;
+         SharedPreferences.Editor editor;
 
 
          //main view variables
-         ListView listenList;
-         List<String> list;
-         ArrayAdapter<String> arrayAdapter;
+//         ListView listenList;
+//         List<String> list;
+//         ArrayAdapter<String> arrayAdapter;
 
          //notifications
          NotificationCompat.Builder notifications;
@@ -122,7 +144,6 @@ public class MainActivity extends AppCompatActivity  implements BeacodeScanner.L
         help= (Button)findViewById(R.id.help);
         police= (Button)findViewById(R.id.police);
         following= (Button)findViewById(R.id.following);
-        listenList=(ListView)findViewById(R.id.listen_list);
 
         helpMp = MediaPlayer.create(this, R.raw.help_me);
         policeMp = MediaPlayer.create(this, R.raw.contact_the_police);
@@ -134,19 +155,28 @@ public class MainActivity extends AppCompatActivity  implements BeacodeScanner.L
 
         //checkbox setup
         check = (CheckBox) findViewById(R.id.checkBox);
-        pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
+        pref = getApplicationContext().getSharedPreferences("MyPref", 0);
         editor = pref.edit();
         check.setChecked(pref.getBoolean("listen", false));
 
+//intialization of images and values for listening page
 
+        hImage= findViewById(R.id.help_image);
+        hImageG= findViewById(R.id.help_image_grey);
+        pImage=findViewById(R.id.police_image);
+        pImageG=findViewById(R.id.police_image_grey);
+        fImage=findViewById(R.id.following_image);
+        fImageG=findViewById(R.id.following_image_grey);
+        policeCounter=findViewById(R.id.police_counter);
+        helpCounter=findViewById(R.id.help_counter);
+        followingCounter=findViewById(R.id.following_counter);
+        pCounter=0;
+        fCounter=0;
+        hCounter=0;
+        distress=findViewById(R.id.distress);
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-
-
-        list = new ArrayList<String>();
-        arrayAdapter = new ArrayAdapter<String>(this, R.layout.mytextview, list );
-        listenList.setAdapter(arrayAdapter);
 
 
         ////////////////////////////////////////////////////////////////
@@ -166,9 +196,22 @@ public class MainActivity extends AppCompatActivity  implements BeacodeScanner.L
 
         /////////////////////////////////////////////////////////////////
 
+
+        //push notifications setup
         notifications = new NotificationCompat.Builder(this);
         notifications.setSmallIcon(R.drawable.icons8_helping_hand);
         notifications.setContentTitle("di/stress");
+
+
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+        PendingIntent intent = PendingIntent.getActivity(this, 0,
+                notificationIntent, 0);
+
+        notifications.setContentIntent(intent);
 
 
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -206,7 +249,8 @@ public class MainActivity extends AppCompatActivity  implements BeacodeScanner.L
         if (checkBox.isChecked()) {
             editor.putBoolean("listen", true);
             editor.commit();
-
+            if(BeacodeScanner.getState()!= BeacodeScanner.State.RUNNING)
+            BeacodeScanner.start();
         } else {
             editor.putBoolean("listen", false);
             editor.commit();
@@ -227,12 +271,12 @@ public class MainActivity extends AppCompatActivity  implements BeacodeScanner.L
 
                     helpMp.start();
 
-                    if(followingPlaying) {
+                    if(followingMp.isPlaying()) {
                         followingMp.pause();
                         followingPlaying = false;
                         changeIcon(2, followingPlaying);
                     }
-                    if(policePlaying) {
+                    if(policeMp.isPlaying()) {
                         policeMp.pause();
                         policePlaying = false;
                         changeIcon(3, policePlaying);
@@ -249,12 +293,12 @@ public class MainActivity extends AppCompatActivity  implements BeacodeScanner.L
 
                     followingMp.start();
 
-                    if(helpPlaying) {
+                    if(helpMp.isPlaying()) {
                         helpMp.pause();
                         helpPlaying = false;
                         changeIcon(1, helpPlaying);
                     }
-                    if(policePlaying) {
+                    if(policeMp.isPlaying()) {
                         policeMp.pause();
                         policePlaying = false;
                         changeIcon(3, policePlaying);
@@ -274,12 +318,12 @@ public class MainActivity extends AppCompatActivity  implements BeacodeScanner.L
 
                     policeMp.start();
 
-                    if(followingPlaying) {
+                    if(followingMp.isPlaying()) {
                         followingMp.pause();
                         followingPlaying = false;
                         changeIcon(2, followingPlaying);
                     }
-                    if(helpPlaying) {
+                    if(helpMp.isPlaying()) {
                         helpMp.pause();
                         helpPlaying = false;
                         changeIcon(1, helpPlaying);
@@ -342,14 +386,51 @@ public class MainActivity extends AppCompatActivity  implements BeacodeScanner.L
     public void onMessage(int messageId, BeacodeScanner.Message
             message) {
 
-        if(findViewById(R.id.listen_list).getVisibility()==View.GONE) {
-            findViewById(R.id.textView).setVisibility(View.GONE);
-            findViewById(R.id.listen_list).setVisibility(View.VISIBLE);
-        }
+flash=!flash;
 
         this.message=message.toString();
-        list.add("     "+this.message);
-        arrayAdapter.notifyDataSetChanged();
+switch (this.message.charAt(0)){
+    case 'c':pCounter++;                //c for contact the police
+            policeCounter.setText(Integer.toString(pCounter));
+            policeCounter.setTextColor(Color.parseColor("#fd4582"));
+            pImage.setVisibility(View.VISIBLE);
+            pImageG.setVisibility(View.GONE);
+            hImageG.setVisibility(View.VISIBLE);
+            hImage.setVisibility(View.GONE);
+            fImageG.setVisibility(View.VISIBLE);
+            fImage.setVisibility(View.GONE);
+            break;
+    case 'h':hCounter++;                //h for help me
+        helpCounter.setText(Integer.toString(hCounter));
+        helpCounter.setTextColor(Color.parseColor("#fd4582"));
+        hImage.setVisibility(View.VISIBLE);
+        hImageG.setVisibility(View.GONE);
+        pImageG.setVisibility(View.VISIBLE);
+        pImage.setVisibility(View.GONE);
+        fImageG.setVisibility(View.VISIBLE);
+        fImage.setVisibility(View.GONE);
+        break;
+    case 's':fCounter++;                //s for someone is following
+        followingCounter.setText(Integer.toString(fCounter));
+        followingCounter.setTextColor(Color.parseColor("#fd4582"));
+        fImage.setVisibility(View.VISIBLE);
+        fImageG.setVisibility(View.GONE);
+        pImageG.setVisibility(View.VISIBLE);
+        pImage.setVisibility(View.GONE);
+        hImageG.setVisibility(View.VISIBLE);
+        hImage.setVisibility(View.GONE);
+        break;
+
+}
+
+distress.setText(this.message);
+if(flash){  /// to make distress signal flash if we are recieving any
+    distress.setTextColor(Color.parseColor("#fd4582"));
+
+}else{
+    distress.setTextColor(Color.parseColor("#e9ebee"));
+
+}
 
 
         if(!appOpen) {
